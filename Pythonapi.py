@@ -221,6 +221,11 @@ class googletransrateAPI(Resource):
         inStr = """어린이집을 보내기 위해서 고려해야 할것들 자세하게 알려줘"""
         outStr = translator.translate(inStr, dest='en', src='auto')
         print(f"{inStr} => {outStr.text}")
+        lastoutStr = translator.translate(outStr.text, dest='ko', src='auto')
+        print(f"{outStr} => {lastoutStr.text}")
+        googletransrate_json = {'translatedText': lastoutStr.text}
+        print(googletransrate_json)
+        return jsonify({"result": googletransrate_json})
         
 
 class kinderresourceAPI(Resource):
