@@ -163,8 +163,7 @@ class NaverAPI(Resource):
 class googlemealAPI(Resource):
     def post(self):
         translator = googletrans.Translator()
-        inStr = """3가지 식사인 ( 1.아침, 2.점심, 3.저녁 ) 추천해줘. 그리고 어린아이들에게 좋은 영양소들을 포함할 수있게 추천해줘. 그리고 
-건강에 어떻게 좋은지 알려줘"""
+        inStr = request.json['exceptmeal'] + """3가지 식사인 ( 1.아침, 2.점심, 3.저녁 ) 추천해줘. 그리고 어린아이들에게 좋은 영양소들을 포함할 수있게 추천해줘. 그리고 건강에 어떻게 좋은지 알려줘"""
         outStr = translator.translate(inStr, dest='en', src='auto')
         print(f"{inStr} => {outStr.text}")
         # GptmealAPI에 POST 요청 보내기
