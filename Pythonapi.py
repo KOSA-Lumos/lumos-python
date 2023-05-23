@@ -58,18 +58,18 @@ class GptAPI(Resource):
 
 class PapagomealengAPI(Resource):
     def post(self):
-        # source_text = "어린이 또는 아이들에게 좋은 영양소( 탄수화물,지방,단백질 )들에 맞게 메인반찬을 포함하여 식단 3가지 추천해주고 건강에 어떻게 좋은지 알려줘 "
-        source_text = "어린이 또는 아이들에게 좋은 영양소( 탄수화물,지방,단백질 )들에 맞게 메인반찬을 포함하여 식단 1가지 추천해주고 건강에 어떻게 좋은지 알려줘 "
+        source_text = request.json['exceptmeal'] + """3가지 식사인 ( 1.아침, 2.점심, 3.저녁 ) 추천해줘. 그리고 어린아이들에게 좋은 영양소들을 포함할 수있게 추천해줘. 그리고 건강에 어떻게 좋은지 알려줘"""
+        print(f"{source_text}")
         enc_text = urllib.parse.quote(source_text)
         data = f"source=ko&target=en&text={enc_text}"
         url = "https://openapi.naver.com/v1/papago/n2mt"
         
-        request = urllib.request.Request(url)
-        request.add_header("X-Naver-Client-Id", naverclient_id)
-        request.add_header("X-Naver-Client-Secret", naverclient_secret)
+        api_request = urllib.request.Request(url)
+        api_request.add_header("X-Naver-Client-Id", naverclient_id)
+        api_request.add_header("X-Naver-Client-Secret", naverclient_secret)
 
         try:
-            response = urllib.request.urlopen(request, data=data.encode("utf-8"))
+            response = urllib.request.urlopen(api_request, data=data.encode("utf-8"))
         except urllib.error.HTTPError as e:
             print(f"HTTP Error: {e.code}")
             return {"error": "HTTP Error"}, e.code
@@ -94,6 +94,7 @@ class PapagomealengAPI(Resource):
         else:
             print("Error Code: {rescode}")
             return {"error": "API Error"}, rescode
+
 
 class GptmealAPI(Resource):
     def post(self):
@@ -160,19 +161,19 @@ class NaverAPI(Resource):
             return {"message": str(e)}, 500
         
 
-class googlemealAPI(Resource):
-    def post(self):
-        translator = googletrans.Translator()
-        inStr = request.json['exceptmeal'] + """3가지 식사인 ( 1.아침, 2.점심, 3.저녁 ) 추천해줘. 그리고 어린아이들에게 좋은 영양소들을 포함할 수있게 추천해줘. 그리고 건강에 어떻게 좋은지 알려줘"""
-        outStr = translator.translate(inStr, dest='en', src='auto')
-        print(f"{inStr} => {outStr.text}")
-        # GptmealAPI에 POST 요청 보내기
-        gptmeal_url = "http://localhost:5000/gptmealAPI"
-        gptmeal_response = requests.post(gptmeal_url, json={'translatedText': outStr.text})
-        lastoutStr = translator.translate(gptmeal_response.text, dest='ko', src='auto')
-        gptmeal_json = {'translatedText': lastoutStr.text}
-        print(gptmeal_json)
-        return jsonify({"result": gptmeal_json})
+# class googlemealAPI(Resource):
+#     def post(self):
+#         translator = googletrans.Translator()
+#         inStr = request.json['exceptmeal'] + """3가지 식사인 ( 1.아침, 2.점심, 3.저녁 ) 추천해줘. 그리고 어린아이들에게 좋은 영양소들을 포함할 수있게 추천해줘. 그리고 건강에 어떻게 좋은지 알려줘"""
+#         outStr = translator.translate(inStr, dest='en', src='auto')
+#         print(f"{inStr} => {outStr.text}")
+#         # GptmealAPI에 POST 요청 보내기
+#         gptmeal_url = "http://localhost:5000/gptmealAPI"
+#         gptmeal_response = requests.post(gptmeal_url, json={'translatedText': outStr.text})
+#         lastoutStr = translator.translate(gptmeal_response.text, dest='ko', src='auto')
+#         gptmeal_json = {'translatedText': lastoutStr.text}
+#         print(gptmeal_json)
+#         return jsonify({"result": gptmeal_json})
 
 class kinderrecommendAPI(Resource):
     def post(self):
@@ -249,7 +250,7 @@ api.add_resource(NaverAPI, '/naverApi')
 api.add_resource(PapagomealengAPI, '/gptmeal2API')
 api.add_resource(PapagomealkorAPI, '/gptmealkorAPI')
 api.add_resource(GptmealAPI, '/gptmealAPI')
-api.add_resource(googlemealAPI, '/googlemealAPI')
+# api.add_resource(googlemealAPI, '/googlemealAPI')
 api.add_resource(googletransrateAPI, '/googletransrateAPI')
 api.add_resource(kinderrecommendAPI, '/kinderrecommendAPI')
 api.add_resource(kinderemotionAPI, '/kinderemotionAPI')
