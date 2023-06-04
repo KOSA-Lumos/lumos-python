@@ -31,18 +31,24 @@ naverclient_secret = naverclient_secret
 
 comprehend = session.client('comprehend')
 
+import json
+
 class EmotionAPI(Resource):
     def post(self):
-        text = """ 명품 광명 편한세상센트레빌 행복        안녕하세요 내년 이사를 앞두고 어린이집을 옮겨야하는데 정보가 부족해 입주민분들께 문의드려요 시립구름산어린이집이랑 시립하안누리어린이집 어떤가요 구름산은 가까운데 가는길이 언덕이고 하안누리는 은근         시립 구름산어린이집 하안누리 어린이집 어떤가요           나눔카페 구광명맘대디 광명시광        년 월생이구요 년 월에 보낸다 치면 희망이 있을까요ㅠㅠ 시립구름산어린이집 대기하려구 생각 중이에요 ㅠ        국공립 어린이집 대기자 인데요 희망있을까요           나눔카페 구광명맘대디 광명시광        저는 가깝고 시립이니까 원비가 저렴할 것이다 그리고 시립이니까 안전할 것같다 이정도 수준으로만 느끼고 있는데 실제 보내고 계신 맘님들의 소견 듣고싶어요 철산동 은총유치원 옆에 있는 곳이요 시립구름산어린이집        시립구름산어린이집 보냐시는 맘님들께 여쭤요           나눔카페 구광명맘대디 광명시광        도덕파크 언덕에 있는 구름산어린이집이요 몇살부터 보육하는지 아시는분 계실까요 세부터라고 생각했는데 오늘 친구랑 얘기하다보니 아닐수도 있다고  갑자기 궁금해져서 문의드려요        시립구름산어린이집           나눔카페 구광명맘대디 광명시광        만세세는 낮잠 자나요 학기만 잔다던지학기만 잔다던지 전화문의드려보기전에 궁금해서 글올려보아요        시립구름산어린이집도덕파크 낮잠여부           나눔카페 구광명맘대디 광명시광        시립구름산어린이집 보내시는 분 있으신가요 제 주위에 보낸분이 없어서 평이 어떤지 잘 모르겠네요 ㅠㅠ        시립구름산어린이집 어떤가요           나눔카페 구광명맘대디 광명시광        민간에서 옮기려해요 시립이라 특별활동이 코로나 이후 없나요 당연히 시립이라 믿고 보내는게 맞다여겼는데 평가인증이던데 그 이유를 아시는분 계실까요 그냥 엄마입장에서 보내시기 어떤지 궁금해요 사소한것도         시립구름산어린이집도덕파크옆 어떤가요           나눔카페 구광명맘대디 광명시광        혹시 다녔던 선배맘님 어린이집 정보 부탁드려요 집에서 그나마 가까워서 오래전에 신청했는데 입소가능하다는 연락 받았는데 정보가 너무 없네요 ㅜㅜ 시설 선생님 교육프로그램식사 차량 등등 아무거나 말씀해주세용        시립구름산어린이집           나눔카페 구광명맘대디 광명시광        시립구름산어린이집 하안동 원복 구해여 연락부탁드릴께여 혹시 이편한세상센트레빌에서 세 다니는 아이혹시 있나여 같이다니는 친구가 있었으면하는데 있다면 꼭 연락부탁드립니다        시립구름산어린이집 하안동 원복 가방 구해여           나눔카페 구광명맘대디 광명시광        거래완료한 회원의 닉네임을 제목이나 본문에 수정해서 남겨주세요 시립푸른어린이집 가방 체육복 드림합니다 체육복 사이즈는 호 입니다 저희 아이 세때 입혔던 사이즈네요 댓글 주세요 문고리 드림합니다        시립푸른어린이집 가방체육복세 
-다음 글들에서 긍정적인 부분과 부정적인 단어들을 나눠 각각의 퍼센트가 어떻게 될지 나타내줘. 그리고 종합해서 글자들이 갖고있는 총 감정이 긍정적 또는 부정적으로 표현하고있는지 알려줘
-"""
+        text_list = request.json.get('text')
+        text = ' '.join(text_list)  # 리스트 요소들을 공백으로 연결하여 하나의 문자열로 변환
+        json_text = json.loads(json.dumps(text))  # 'text' 변수를 JSON 문자열로 변환
+        print(json_text)
         print('Calling DetectSentiment')
-        result = comprehend.detect_sentiment(Text=text, LanguageCode='en')
-        print(json.dumps(result, sort_keys=True, indent=4))
+        result = comprehend.detect_sentiment(Text=json_text, LanguageCode='en')
+        decoded_result = json.dumps(result)  # 결과를 JSON 형식으로 변환하여 디코딩
+        print(json.dumps(decoded_result, ensure_ascii=False, sort_keys=True, indent=4))  # 한글 표시를 위해 ensure_ascii=False 설정
         print("End of DetectSentiment\n")
 
         # 결과를 클라이언트에게 반환합니다.
-        return {'result': result}
+        return {'result': decoded_result}
+
+
 
 
 class GptAPI(Resource):
@@ -133,32 +139,42 @@ class PapagomealkorAPI(Resource):
 
 class NaverAPI(Resource):
     def post(self):
-
         # 검색어 입력
-        query = "\"시립구름산어린이집\""
+        query = request.json.get('centerName')
+        print(query)
 
         # 검색 API 요청 URL 설정
         encText = urllib.parse.quote(query)
         url = "https://openapi.naver.com/v1/search/cafearticle?query=" + encText
 
         # API 요청 헤더 설정
-        request = urllib.request.Request(url)
-        request.add_header("X-Naver-Client-Id", naverclient_id)
-        request.add_header("X-Naver-Client-Secret", naverclient_secret)
+        request_obj = urllib.request.Request(url)
+        request_obj.add_header("X-Naver-Client-Id", naverclient_id)
+        request_obj.add_header("X-Naver-Client-Secret", naverclient_secret)
 
         try:
             # API 요청 및 응답 처리
-            response = urllib.request.urlopen(request)
+            response = urllib.request.urlopen(request_obj)
             rescode = response.getcode()
 
             if rescode == 200:
                 response_body = response.read()
                 result = json.loads(response_body.decode('utf-8'))
+
+                # EmotionAPI 호출
+                descriptions = [item['description'] for item in result['items']]
+                # print(descriptions)
+                response = requests.post('http://localhost:5000/emotionApi', json={'text': descriptions})
+                print(response)
+                response.raise_for_status()
+                result = response.json()
+
                 return result
             else:
                 return {"message": "Error Code:" + rescode}, rescode
         except Exception as e:
             return {"message": str(e)}, 500
+
         
 
 # class googlemealAPI(Resource):
@@ -178,26 +194,22 @@ class NaverAPI(Resource):
 class kinderrecommendAPI(Resource):
     def post(self):
         translator = googletrans.Translator()
-        inStr = """# center_num, center_name, center_state, center_city, childcare_eval_regionnum, childcare_eval_grade, childcare_eval_communication, childcare_eval_environment, childcare_eval_safety, childcare_eval_teacher, childcare_eval_date
-'1', 'GS건설 꿈과 희망의 어린이집', '서울특별시', '종로구', '66', 'A  ', '우수 ', '우수 ', '우수 ', '우수 ', '2022.09'
-'2', 'KIM&CHANG 어린이집', '서울특별시', '종로구', '65', 'A  ', '우수 ', '우수 ', '우수 ', '우수 ', '2019.01'
-'3', 'KT혜화 어린이집', '서울특별시', '종로구', '64', 'A  ', '우수 ', '우수 ', '우수 ', '우수 ', '2019.07'
-# center_num, center_detail_state, center_detail_city, center_detail_name, center_detail_classification, center_detail_centeropen, center_detail_officenumber, center_detail_address, center_detail_phone, center_detail_fax, center_detail_roomcount, center_detail_roomsize, center_detail_playgroundcount, center_detail_teachercount, center_detail_regularperson, center_detail_currentperson, center_detail_Latitude, center_detail_longitude, center_detail_vehicle, center_detail_hompage, center_detail_establish
-'1', '서울특별시', '종로구', 'GS건설 꿈과 희망의 어린이집', '직장', '정상', '3159', '서울특별시 종로구 종로 33 그랑서울 타워2  (2층)', '02-3789-5971', '02-3789-5973', '5', '202', '1', '15', '76', '41', '37.57096024357674', '126.98144024815856', '미운영', 'http://www.puruni.com/gsconst', '2014-01-29'
-'2', '서울특별시', '종로구', 'KIM&CHANG 어린이집', '직장', '정상', '3175', '서울특별시 종로구 신문로2가 경희궁길 26 썬타워빌딩 1층', '02-738-6901', '02-738-6903', '3', '164', '1', '17', '49', '42', '37.572274074637356', '126.97098987226795', '미운영', '', '2013-02-22'
-'3', '서울특별시', '종로구', 'KT혜화 어린이집', '직장', '정상', '3082', '서울특별시 종로구 대학로 65 (연건동)', '02-3676-9300', '02-3676-9301', '5', '169', '0', '5', '49', '4', '37.57700048', '127.0042702', '미운영', '', '2008-02-28'
+        # state.testData의 요소들을 instr 문자열에 추가
+        inStr = str(request.json['favorgptlist']) + """다음과 같은 어린이집 또는 유치원들에 대한 정보들이 있다. 이중에 제일 좋아보이는 어린이집을 추천해주고 왜 그런지 이유를 알려줘"""
+        if inStr is not None and len(inStr) > 0:
+            outStr = translator.translate(inStr, dest='en', src='auto')
+            print(f"{inStr} => {outStr.text}")
+            # GptmealAPI에 POST 요청 보내기
+            gptmeal_url = "http://localhost:5000/gptmealAPI"
+            # gptmeal_response = requests.post(gptmeal_url, json={'translatedText': inStr.text})
+            gptmeal_response = requests.post(gptmeal_url, json={'translatedText': outStr.text})
+            lastoutStr = translator.translate(gptmeal_response.text, dest='ko', src='auto')
+            gptmeal_json = {'translatedText': lastoutStr.text}
+            print(gptmeal_json)
+            return jsonify({"result": gptmeal_json})
+        else:
+            print("ㅠㅠ")
 
-위의 데이터들이 있는데 이중에 제일 좋아보이는 어린이집을 추천해주고 왜 그런지 이유를 알려줘
-"""
-        outStr = translator.translate(inStr, dest='en', src='auto')
-        print(f"{inStr} => {outStr.text}")
-        # GptmealAPI에 POST 요청 보내기
-        gptmeal_url = "http://localhost:5000/gptmealAPI"
-        gptmeal_response = requests.post(gptmeal_url, json={'translatedText': outStr.text})
-        lastoutStr = translator.translate(gptmeal_response.text, dest='ko', src='auto')
-        gptmeal_json = {'translatedText': lastoutStr.text}
-        print(gptmeal_json)
-        return jsonify({"result": gptmeal_json})
     
 class kinderemotionAPI(Resource):
     def post(self):
